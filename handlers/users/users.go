@@ -20,23 +20,23 @@ func CreateUser(user *usermodel.Users) (id int64, err error) {
 	return result.RowsAffected, nil
 }
 
-func Login(user *usermodel.Users) (err error) {
+func Login(user *usermodel.Users) (id int,err error) {
 	db, err := database.GetPostgressClient()
 	var registeredUser usermodel.Users
 	if err != nil {
-		return err
+		return 0, err
 	}
 	result := db.Where("email = ?", user.Email).First(&registeredUser)
 	if result.Error != nil {
 		fmt.Println("result", result.Error)
-		return errors.New("invalid credentials")
+		return 0,errors.New("invalid credentials")
 	}
 	fmt.Println("registerd user ", registeredUser)
 	err = registeredUser.IsPasswordCorrect(user.Password)
 	if err != nil {
 		fmt.Println("incorrect password")
-		return errors.New("invalid credentials")
+		return 0,errors.New("invalid credentials")
 	}
 
-	return nil
+	return registeredUser.ID, nil
 }

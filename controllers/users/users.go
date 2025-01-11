@@ -2,10 +2,13 @@ package users
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	userhandlers "github.com/sofisalmanarif/lms/handlers/users"
 	usermodel "github.com/sofisalmanarif/lms/models/users"
+	utilities "github.com/sofisalmanarif/lms/utils"
 )
 
 func GetUsers(c *fiber.Ctx) error {
@@ -50,17 +53,31 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 	fmt.Println(user.Name)
-	 err := userhandlers.Login(&user)
+	id, err := userhandlers.Login(&user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
-			"message":err.Error(),
+			"message": err.Error(),
 		})
 	}
+
+	token, err := utilities.GenerateJWTToken(id)
+	if err != nil {
+		log.Fatal("someting went wrong")
+
+	}
+
+	cookie := fiber.Cookie{
+		Name:     "auth-token",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HTTPOnly: true,
+	}
+	c.Cookie(&cookie)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
 		"message": "Login successfully",
-		})
-		
+		"token":   token,
+	})
 
 }
