@@ -35,7 +35,7 @@ func Login(user *usermodel.Users) (err error) {
 	err = registeredUser.IsPasswordCorrect(user.Password)
 	if err != nil {
 		fmt.Println("incorrect password")
-		return  errors.New("invalid credentials")
+		return errors.New("invalid credentials")
 	}
 
 	return nil

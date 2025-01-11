@@ -52,14 +52,14 @@ func Login(c *fiber.Ctx) error {
 	fmt.Println(user.Name)
 	 err := userhandlers.Login(&user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
 			"message":err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
-		"message": "User logged in successfully",
+		"message": "Login successfully",
 		})
 		
 

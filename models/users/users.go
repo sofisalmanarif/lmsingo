@@ -2,7 +2,6 @@ package usermodel
 
 import (
 	"errors"
-
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -19,7 +18,6 @@ func (u *Users) BeforeCreate(tx *gorm.DB) (err error) {
 		panic(err)
 	}
 	u.Password = string(hashedPassword)
-
 	return nil
 }
 
