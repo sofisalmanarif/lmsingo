@@ -8,5 +8,6 @@ import (
 func UserRouter(app *fiber.App) {
 	router:=app.Group("api/users")
 	router.Get("/", users.GetUsers)
+	router.Post("/",users.RegisterUser)
 
 }
