@@ -4,13 +4,9 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	userhandlers "github.com/sofisalmanarif/lms/handlers/users"
+	usermodel "github.com/sofisalmanarif/lms/models/users"
 )
-
-type RegisterUserType struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
 
 func GetUsers(c *fiber.Ctx) error {
 	fmt.Println("hitted")
@@ -22,7 +18,7 @@ func GetUsers(c *fiber.Ctx) error {
 
 func RegisterUser(c *fiber.Ctx) error {
 	fmt.Println("hitted")
-	var user RegisterUserType
+	var user usermodel.Users
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
@@ -30,6 +26,17 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 	fmt.Println(user.Name)
-	return nil
-	// Register user logic here
+	id, err := userhandlers.CreateUser(&user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to create user",
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"success": true,
+		"message": "User created successfully",
+		"id":      id,
+	})
 }

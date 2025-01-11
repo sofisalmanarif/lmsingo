@@ -24,15 +24,6 @@ func main() {
 		panic(err)
 	}
 
-	db, err := database.GetPostgressClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = db.AutoMigrate(&User{})
-	if err != nil {
-		log.Printf("migrations failed")
-		log.Fatal(err)
-	}
 	users.UserRouter(app)
 
 	app.Listen(":3000")
