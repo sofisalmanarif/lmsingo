@@ -26,7 +26,7 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 	fmt.Println(user.Name)
-	id, err := userhandlers.CreateUser(&user)
+	_, err := userhandlers.CreateUser(&user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -37,6 +37,30 @@ func RegisterUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"success": true,
 		"message": "User created successfully",
-		"id":      id,
 	})
+}
+
+func Login(c *fiber.Ctx) error {
+	fmt.Println("hitted")
+	var user usermodel.Users
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid request body",
+		})
+	}
+	fmt.Println(user.Name)
+	 err := userhandlers.Login(&user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message":err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "User logged in successfully",
+		})
+		
+
 }
