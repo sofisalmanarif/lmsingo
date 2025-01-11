@@ -29,11 +29,11 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 	fmt.Println(user.Name)
-	_, err := userhandlers.CreateUser(&user)
+	 err := userhandlers.CreateUser(&user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"message": "Failed to create user",
+			"message": err.Error(),
 		})
 	}
 
