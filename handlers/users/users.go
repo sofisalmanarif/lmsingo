@@ -24,13 +24,14 @@ func CreateUser(user *usermodel.Users) (err error) {
 				return err
 			}
 		}
+		return result.Error
 	}
 	return nil
 }
 
 func Login(user *usermodel.Users) (id int, err error) {
 	db, err := database.GetPostgressClient()
-	var registeredUser usermodel.Users
+	var registeredUser *usermodel.Users
 	if err != nil {
 		return 0, err
 	}

@@ -29,7 +29,7 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 	fmt.Println(user.Name)
-	 err := userhandlers.CreateUser(&user)
+	err := userhandlers.CreateUser(&user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -52,7 +52,7 @@ func Login(c *fiber.Ctx) error {
 			"message": "Invalid request body",
 		})
 	}
-	fmt.Println(user.Name)
+	fmt.Println(user.Email)
 	id, err := userhandlers.Login(&user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -64,6 +64,10 @@ func Login(c *fiber.Ctx) error {
 	token, err := utilities.GenerateJWTToken(id)
 	if err != nil {
 		log.Fatal("someting went wrong")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "someting went wrong",
+		})
 
 	}
 
