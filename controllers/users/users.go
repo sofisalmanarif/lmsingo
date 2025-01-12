@@ -12,7 +12,7 @@ import (
 )
 
 func AllUsers(c *fiber.Ctx) error {
-	fmt.Println("hitted")
+	fmt.Println("hitted",c.Locals("userId"))
 	users, err := userhandlers.AllUsers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
