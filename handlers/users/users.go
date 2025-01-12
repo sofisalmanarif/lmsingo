@@ -3,6 +3,7 @@ package userhandlers
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	database "github.com/sofisalmanarif/lms/db/postgresql"
@@ -48,4 +49,20 @@ func Login(user *usermodel.Users) (id int, err error) {
 	}
 
 	return registeredUser.ID, nil
+}
+
+
+func AllUsers()(users []*usermodel.Users,err error){
+	var AllUsers []*usermodel.Users
+	db,err :=database.GetPostgressClient()
+	if err != nil{
+		return nil,err
+	}
+	result :=db.Select("ID, Name, Email").Find(&AllUsers)
+	if result.Error != nil{
+		slog.Error(result.Error.Error())
+		return nil, fmt.Errorf("failed to fetch users",)
+	}
+	return AllUsers,nil
+
 }

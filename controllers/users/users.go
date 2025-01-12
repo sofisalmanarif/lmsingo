@@ -11,11 +11,18 @@ import (
 	utilities "github.com/sofisalmanarif/lms/utils"
 )
 
-func GetUsers(c *fiber.Ctx) error {
+func AllUsers(c *fiber.Ctx) error {
 	fmt.Println("hitted")
+	users, err := userhandlers.AllUsers()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"sucess":  true,
-		"message": "Users retrieved successfully",
+		"message": "All Users",
+		"data":    users,
 	})
 }
 

@@ -7,7 +7,7 @@ import (
 
 func UserRouter(app *fiber.App) {
 	router:=app.Group("api/users")
-	router.Get("/", users.GetUsers)
+	router.Get("/", users.AllUsers)
 	router.Post("/",users.RegisterUser)
 	router.Post("/login",users.Login)
 
