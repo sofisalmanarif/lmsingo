@@ -1,7 +1,6 @@
 package userhandlers
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -19,8 +18,8 @@ func CreateUser(user *usermodel.Users) (err error) {
 	if result.Error != nil {
 		if pgErr, ok := result.Error.(*pgconn.PgError); ok {
 			switch pgErr.Code {
-			case  "23505":
-				return errors.New("email already registered")
+			case "23505":
+				return fmt.Errorf("email already registered")
 			default:
 				return err
 			}
@@ -32,37 +31,52 @@ func CreateUser(user *usermodel.Users) (err error) {
 
 func Login(user *usermodel.Users) (id int, err error) {
 	db, err := database.GetPostgressClient()
-	var registeredUser *usermodel.Users
+	var registeredUser usermodel.Users
 	if err != nil {
 		return 0, err
 	}
 	result := db.Where("email = ?", user.Email).First(&registeredUser)
 	if result.Error != nil {
 		fmt.Println("result", result.Error)
-		return 0, errors.New("invalid credentials")
+		return 0, fmt.Errorf("invalid credentials")
 	}
 	fmt.Println("registerd user ", registeredUser)
 	err = registeredUser.IsPasswordCorrect(user.Password)
 	if err != nil {
 		fmt.Println("incorrect password")
-		return 0, errors.New("invalid credentials")
+		return 0, fmt.Errorf("invalid credentials")
 	}
 
 	return registeredUser.ID, nil
 }
 
-
-func AllUsers()(users []*usermodel.Users,err error){
-	var AllUsers []*usermodel.Users
-	db,err :=database.GetPostgressClient()
-	if err != nil{
-		return nil,err
+func AllUsers() (users []usermodel.Users, err error) {
+	var allUsers []usermodel.Users
+	db, err := database.GetPostgressClient()
+	if err != nil {
+		return nil, err
 	}
-	result :=db.Select("ID, Name, Email").Find(&AllUsers)
-	if result.Error != nil{
+	result := db.Select("ID, Name, Email").Find(&allUsers)
+	if result.Error != nil {
 		slog.Error(result.Error.Error())
-		return nil, fmt.Errorf("failed to fetch users",)
+		return nil, fmt.Errorf("failed to fetch users")
 	}
-	return AllUsers,nil
+	return allUsers, nil
+
+}
+
+func GetUserDetails(id int) (user *usermodel.Users, err error) {
+	db, err := database.GetPostgressClient()
+	if err != nil {
+		return nil, err
+	}
+	var searchedUser usermodel.Users
+	result := db.Select("ID, Name, Email").Where("id =?", id).First(&searchedUser)
+
+	if result.Error != nil {
+		fmt.Println("result", result.Error)
+		return nil, fmt.Errorf("user Not Found")
+	}
+	return &searchedUser, nil
 
 }

@@ -11,5 +11,6 @@ func UserRouter(app *fiber.App) {
 	router.Get("/", middleware.IsUserAuthenticated, users.AllUsers)
 	router.Post("/", users.RegisterUser)
 	router.Post("/login", users.Login)
+	router.Get("/me",middleware.IsUserAuthenticated, users.GetuserDetails)
 
 }

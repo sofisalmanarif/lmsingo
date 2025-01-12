@@ -92,3 +92,22 @@ func Login(c *fiber.Ctx) error {
 	})
 
 }
+
+
+func GetuserDetails(c *fiber.Ctx)error{
+	userId:=c.Locals("userId")
+	fmt.Printf("userid %T",userId)
+	user,err:=userhandlers.GetUserDetails(userId.(int) )
+
+	if err!=nil{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+			})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"success": true,
+			"data": user,
+			})
+
+}
