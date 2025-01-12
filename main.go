@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	database "github.com/sofisalmanarif/lms/db/postgresql"
 	"github.com/sofisalmanarif/lms/routes/users"
 )
@@ -15,10 +16,13 @@ type User struct {
 	Password string `json:"password"`
 }
 
-
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err.Error())
+	}
 	app := fiber.New()
-	err := database.InitilizeDb()
+	err = database.InitilizeDb()
 	if err != nil {
 		log.Fatalln("Database Connection failed")
 		panic(err)

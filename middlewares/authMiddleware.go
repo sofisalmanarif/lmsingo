@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,15 +11,15 @@ import (
 
 func IsUserAuthenticated(c *fiber.Ctx) error {
 	authToken := c.Cookies("auth-token")
+	fmt.Println("hay",os.Getenv("JWT_SECRET"))
 	if authToken == "" {
-		fmt.Println("hay")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 		})
 	}
 
 	token, err := jwt.ParseWithClaims(authToken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte("dhhfjshdjhs"), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)

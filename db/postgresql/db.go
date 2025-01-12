@@ -1,15 +1,16 @@
 package database
 
 import (
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
-func InitilizeDb() error{
-	dsn := "host=localhost user=postgres password=root dbname=lms port=5432"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+func InitilizeDb() error {
+	db, err := gorm.Open(postgres.Open(os.Getenv("DNS")), &gorm.Config{})
 	if err != nil {
 		return err
 	}
