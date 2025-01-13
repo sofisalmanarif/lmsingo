@@ -1,4 +1,4 @@
-package users
+package userController
 
 import (
 	"fmt"
@@ -12,7 +12,24 @@ import (
 	utilities "github.com/sofisalmanarif/lms/utils"
 )
 
-func AllUsers(c *fiber.Ctx) error {
+type UsersService interface {
+	AllUsers(c *fiber.Ctx) error
+	RegisterUser(c *fiber.Ctx) error
+	Login(c *fiber.Ctx) error
+	GetUserDetails(c *fiber.Ctx) error
+}
+
+type UsersHandler struct {
+	Validator *validator.Validate
+}
+
+func NewUsersHandler() UsersService {
+	return &UsersHandler{
+		Validator: validator.New(),
+	}
+}
+
+func (h *UsersHandler) AllUsers(c *fiber.Ctx) error {
 	fmt.Println("hitted", c.Locals("userId"))
 	users, err := userhandlers.AllUsers()
 	if err != nil {
@@ -21,14 +38,14 @@ func AllUsers(c *fiber.Ctx) error {
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"sucess":  true,
+		"success": true,
 		"message": "All Users",
 		"data":    users,
 	})
 }
 
-func RegisterUser(c *fiber.Ctx) error {
-	validate := validator.New()
+
+func (h *UsersHandler) RegisterUser(c *fiber.Ctx) error {
 	var user usermodel.Users
 	fmt.Println("hitted")
 	if err := c.BodyParser(&user); err != nil {
@@ -38,7 +55,7 @@ func RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 
-	err := validate.Struct(user)
+	err := h.Validator.Struct(user)
 	if err != nil {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
@@ -48,12 +65,10 @@ func RegisterUser(c *fiber.Ctx) error {
 			})
 		}
 		var errors []string
-		// Validation errors
 		for _, err := range err.(validator.ValidationErrors) {
 			errors = append(errors, fmt.Sprintf("'%s' failed type is '%s'", err.Field(), err.Tag()))
 			fmt.Printf("Validation error: Field '%s' failed on '%s'\n", err.Field(), err.Tag())
 		}
-
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
 			"message": errors,
@@ -74,7 +89,8 @@ func RegisterUser(c *fiber.Ctx) error {
 	})
 }
 
-func Login(c *fiber.Ctx) error {
+
+func (h *UsersHandler) Login(c *fiber.Ctx) error {
 	fmt.Println("hitted")
 	var user usermodel.Users
 	if err := c.BodyParser(&user); err != nil {
@@ -94,12 +110,11 @@ func Login(c *fiber.Ctx) error {
 
 	token, err := utilities.GenerateJWTToken(id)
 	if err != nil {
-		log.Fatal("someting went wrong")
+		log.Fatal("something went wrong")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"message": "someting went wrong",
+			"message": "something went wrong",
 		})
-
 	}
 
 	cookie := fiber.Cookie{
@@ -114,10 +129,10 @@ func Login(c *fiber.Ctx) error {
 		"message": "Login successfully",
 		"token":   token,
 	})
-
 }
 
-func GetuserDetails(c *fiber.Ctx) error {
+
+func (h *UsersHandler) GetUserDetails(c *fiber.Ctx) error {
 	userId := c.Locals("userId")
 	fmt.Printf("userid %T", userId)
 	user, err := userhandlers.GetUserDetails(userId.(int))
@@ -132,5 +147,4 @@ func GetuserDetails(c *fiber.Ctx) error {
 		"success": true,
 		"data":    user,
 	})
-
 }
