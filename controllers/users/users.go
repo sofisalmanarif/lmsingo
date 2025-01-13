@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	userhandlers "github.com/sofisalmanarif/lms/handlers/users"
 	usermodel "github.com/sofisalmanarif/lms/models/users"
@@ -12,7 +13,7 @@ import (
 )
 
 func AllUsers(c *fiber.Ctx) error {
-	fmt.Println("hitted",c.Locals("userId"))
+	fmt.Println("hitted", c.Locals("userId"))
 	users, err := userhandlers.AllUsers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -27,16 +28,39 @@ func AllUsers(c *fiber.Ctx) error {
 }
 
 func RegisterUser(c *fiber.Ctx) error {
-	fmt.Println("hitted")
+	validate := validator.New()
 	var user usermodel.Users
+	fmt.Println("hitted")
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
 			"message": "Invalid request body",
 		})
 	}
-	fmt.Println(user.Name)
-	err := userhandlers.CreateUser(&user)
+
+	err := validate.Struct(user)
+	if err != nil {
+		if _, ok := err.(*validator.InvalidValidationError); ok {
+			fmt.Println(err)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Invalid request body",
+			})
+		}
+		var errors []string
+		// Validation errors
+		for _, err := range err.(validator.ValidationErrors) {
+			errors = append(errors, fmt.Sprintf("'%s' failed type is '%s'", err.Field(), err.Tag()))
+			fmt.Printf("Validation error: Field '%s' failed on '%s'\n", err.Field(), err.Tag())
+		}
+
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": errors,
+		})
+	}
+
+	err = userhandlers.CreateUser(&user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -93,21 +117,20 @@ func Login(c *fiber.Ctx) error {
 
 }
 
+func GetuserDetails(c *fiber.Ctx) error {
+	userId := c.Locals("userId")
+	fmt.Printf("userid %T", userId)
+	user, err := userhandlers.GetUserDetails(userId.(int))
 
-func GetuserDetails(c *fiber.Ctx)error{
-	userId:=c.Locals("userId")
-	fmt.Printf("userid %T",userId)
-	user,err:=userhandlers.GetUserDetails(userId.(int) )
-
-	if err!=nil{
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
 			"message": err.Error(),
-			})
+		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"success": true,
-			"data": user,
-			})
+		"success": true,
+		"data":    user,
+	})
 
 }
