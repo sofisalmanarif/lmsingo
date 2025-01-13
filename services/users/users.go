@@ -1,4 +1,4 @@
-package userhandlers
+package userServices
 
 import (
 	"fmt"
@@ -9,7 +9,20 @@ import (
 	usermodel "github.com/sofisalmanarif/lms/models/users"
 )
 
-func CreateUser(user *usermodel.Users) (err error) {
+type UserService interface{
+	CreateUser(user *usermodel.Users) (err error)
+	Login(user *usermodel.Users) (id int, err error)
+	AllUsers() (users []usermodel.Users, err error)
+	GetUserDetails(id int) (user *usermodel.Users, err error)
+}
+
+type userServices struct{}
+
+func NewUserServices() UserService{
+	return &userServices{}
+}
+
+func (u *userServices) CreateUser(user *usermodel.Users) (err error) {
 	db, err := database.GetPostgressClient()
 	if err != nil {
 		return err
@@ -29,7 +42,7 @@ func CreateUser(user *usermodel.Users) (err error) {
 	return nil
 }
 
-func Login(user *usermodel.Users) (id int, err error) {
+func (u *userServices) Login(user *usermodel.Users) (id int, err error) {
 	db, err := database.GetPostgressClient()
 	var registeredUser usermodel.Users
 	if err != nil {
@@ -50,7 +63,7 @@ func Login(user *usermodel.Users) (id int, err error) {
 	return registeredUser.ID, nil
 }
 
-func AllUsers() (users []usermodel.Users, err error) {
+func (u *userServices) AllUsers() (users []usermodel.Users, err error) {
 	var allUsers []usermodel.Users
 	db, err := database.GetPostgressClient()
 	if err != nil {
@@ -65,7 +78,7 @@ func AllUsers() (users []usermodel.Users, err error) {
 
 }
 
-func GetUserDetails(id int) (user *usermodel.Users, err error) {
+func (u *userServices) GetUserDetails(id int) (user *usermodel.Users, err error) {
 	db, err := database.GetPostgressClient()
 	if err != nil {
 		return nil, err

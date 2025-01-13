@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	userhandlers "github.com/sofisalmanarif/lms/handlers/users"
 	usermodel "github.com/sofisalmanarif/lms/models/users"
+	userServices "github.com/sofisalmanarif/lms/services/users"
 	utilities "github.com/sofisalmanarif/lms/utils"
 )
 
-type UsersService interface {
+type Controller interface {
 	AllUsers(c *fiber.Ctx) error
 	RegisterUser(c *fiber.Ctx) error
 	Login(c *fiber.Ctx) error
@@ -21,17 +21,19 @@ type UsersService interface {
 
 type UsersHandler struct {
 	Validator *validator.Validate
+	Service   userServices.UserService
 }
 
-func NewUsersHandler() UsersService {
+func NewUsersHandler() Controller {
 	return &UsersHandler{
 		Validator: validator.New(),
+		Service:   userServices.NewUserServices(),
 	}
 }
 
 func (h *UsersHandler) AllUsers(c *fiber.Ctx) error {
 	fmt.Println("hitted", c.Locals("userId"))
-	users, err := userhandlers.AllUsers()
+	users, err := h.Service.AllUsers()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -43,7 +45,6 @@ func (h *UsersHandler) AllUsers(c *fiber.Ctx) error {
 		"data":    users,
 	})
 }
-
 
 func (h *UsersHandler) RegisterUser(c *fiber.Ctx) error {
 	var user usermodel.Users
@@ -75,7 +76,7 @@ func (h *UsersHandler) RegisterUser(c *fiber.Ctx) error {
 		})
 	}
 
-	err = userhandlers.CreateUser(&user)
+	err = h.Service.CreateUser(&user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
@@ -89,7 +90,6 @@ func (h *UsersHandler) RegisterUser(c *fiber.Ctx) error {
 	})
 }
 
-
 func (h *UsersHandler) Login(c *fiber.Ctx) error {
 	fmt.Println("hitted")
 	var user usermodel.Users
@@ -100,7 +100,7 @@ func (h *UsersHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 	fmt.Println(user.Email)
-	id, err := userhandlers.Login(&user)
+	id, err := h.Service.Login(&user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
@@ -131,11 +131,10 @@ func (h *UsersHandler) Login(c *fiber.Ctx) error {
 	})
 }
 
-
 func (h *UsersHandler) GetUserDetails(c *fiber.Ctx) error {
 	userId := c.Locals("userId")
 	fmt.Printf("userid %T", userId)
-	user, err := userhandlers.GetUserDetails(userId.(int))
+	user, err := h.Service.GetUserDetails(userId.(int))
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
